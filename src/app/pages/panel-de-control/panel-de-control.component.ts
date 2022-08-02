@@ -1,6 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/auth.service';
 import { DataBaseService } from 'src/app/services/database.service';
+// import { Client as ConversationsClient } from "@twilio/conversations";
+import { Client, Message } from "@twilio/conversations";
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-panel-de-control',
@@ -15,6 +18,19 @@ export class PanelDeControlComponent implements OnInit {
   listaDesordenada: any;
   sorteo: any;
   userLogged: any;
+
+  clientTwilio: any;
+
+  userLogin = "";
+  conversationsClient: any;
+  conversationsList = new Array();
+  messageList: Array<Message> = [];
+  conversationSelected: any;
+  conversationProxy = "";
+
+  nameConversation: any;
+  messageConversation: any;
+
   constructor(private database: DataBaseService,
     private authService: AuthService) {
     this.authService.getUserLogged().subscribe(res => {
@@ -40,75 +56,134 @@ export class PanelDeControlComponent implements OnInit {
       console.log("SORTEO ", this.sorteo[0]);
     })
 
+    const myToken = localStorage.getItem("token");
+    console.log(myToken);
+    // alert(myToken)
+    this.initConversations();
+  }
 
+  change(value: string): void {
+    console.log(value);
 
   }
 
-  desordenarLista() {
-    setTimeout(() => {
-      for (let i = 0; i < 10; i++) {
-        this.listaDesordenada = [...this.usuarios].sort(() => { return Math.random() - 0.5 });
-      }
-    }, 200);
+  loadMessages = async (sid: string) => {
+    this.conversationSelected = sid;
+    this.messageList = new Array();
+    var list = this.conversationsList.find(r => r.sid == sid);
+    list.getMessages().then((messagePaginator: any) =>
+      this.messageList = messagePaginator.items
+    )
+    this.update()
   }
 
-  asignarRegalo() {
-    let listaSorteada = [];
-    for (let i = 0; i < this.listaDesordenada.length - 1; i++) {
-      listaSorteada.push({
-        santa: {
-          name: this.listaDesordenada[i].name,
-          email: this.listaDesordenada[i].email
-        },
-        elegido:
-        {
-          name: this.listaDesordenada[i + 1].name,
-          email: this.listaDesordenada[i + 1].email
-        }
-      });
+  update = () => {
+    var client = this.clientTwilio;
+    client.on('messageAdded', (m: any) => {
+      // alert('si entro')
+      // console.log(myToken);
+      var list = this.conversationsList.find(r => r.sid == this.conversationSelected);
+      list.getMessages().then((messagePaginator: any) =>
+        this.messageList = messagePaginator.items
+      )
     }
+    );
+  }
+  // loadMessagesFor = (thisConversation) => {
+  //   if (this.conversationProxy === thisConversation) {
+  //       thisConversation.getMessages()
+  //           .then(messagePaginator => {
+  //               if (this.state.conversationProxy === thisConversation) {
+  //                   this.setState({ messages: messagePaginator.items, loadingState: 'ready' });
+  //               }
+  //           })
+  //           .catch(err => {
+  //               console.error("Couldn't fetch messages IMPLEMENT RETRY", err);
+  //               this.setState({ loadingState: "failed" });
+  //           });
+  //   }
+  // };
 
-    listaSorteada.push({
-      santa: {
-        name: this.listaDesordenada[this.listaDesordenada.length - 1].name,
-        email: this.listaDesordenada[this.listaDesordenada.length - 1].email
-      },
-      elegido:
-      {
-        name: this.listaDesordenada[0].name,
-        email: this.listaDesordenada[0].email
-      }
+
+  initConversations = async () => {
+    const myToken = localStorage.getItem("token");
+    this.userLogin = localStorage.getItem("name") || '';
+    console.log(this.userLogin);
+    const client = new Client(myToken || "");
+
+    this.clientTwilio = client;
+
+    client.on("conversationJoined", (conversation) => {
+      // console.log(conversation.friendlyName);
+      this.conversationsList.push(conversation);
+
+      // console.error(conversation.getMessages());
+
     });
 
-    listaSorteada.forEach(usuario => {
-      console.log(usuario.santa['name'] + "-->" + usuario.elegido['name']);
+    client.on("conversationLeft", (thisConversation) => {
+
+      this.conversationsList.filter((it) => it !== thisConversation)
     });
-    this.database.createWithCustomId('sorteos', 'ultimoSorteo', { listaSorteada });
-  }
+  };
 
-  sortear() {
-    this.desordenarLista();
-    setTimeout(() => {
-      this.asignarRegalo();
-      console.log(this.userLogged)
-    }, 300);
-    console.log('-------------------------------');
-    console.log('-------------------------------');
-    console.log('-------------------------------');
-  }
+  addConversation(): void {
+    console.log(this.nameConversation);
+    var objects = JSON.stringify({ IdChanel: this.nameConversation, idUser: this.userLogin })
+    const options = {
+      method: 'POST',
+      headers: { accept: '*/*', 'Content-Type': 'application/json' },
+      body: objects
+    };
 
-  mostrarDialog() {
-    this.mostrarConfirmacion = true;
-  }
+    fetch('https://twilioconversation20220802094045.azurewebsites.net/addConversationByUser', options)
+      .then(response => response.json())
+      .then(response =>
+        Swal.fire({
+          title: 'Finalizado Copia el link y pasalo a la otra conversacion',
+          text: 'https://twilioconversation20220802094045.azurewebsites.net/login/' + response,
+          showDenyButton: false,
+          showCancelButton: false,
+          confirmButtonText: 'OK',
+        }).then((result) => {
+          /* Read more about isConfirmed, isDenied below */
+          if (result.isConfirmed) {
+            Swal.fire('Saved!', '', 'success')
+          } else if (result.isDenied) {
+            Swal.fire('Changes are not saved', '', 'info')
+          }
+        })
+      )
+      .catch(err => console.error(err));
 
-  eliminarSorteo() {
-    if (this.codigoIngresado.toLowerCase() != this.codigoDeVerificacion.toLowerCase()) {
-      alert("Deja de hacer trampa, ese codigo NO es.")
-      return;
-    }
+  };
 
-    this.database.eliminar('sorteos', 'ultimoSorteo');
+  sendmessage(): void {
 
+    var author = this.userLogin;
+    var message = this.messageConversation;
+    var idCanal = this.conversationSelected;
 
+    // console.log('author', author);
+
+    // console.log('message', message);
+
+    // console.log('idCanal', idCanal);
+
+    var objects = JSON.stringify({ author: author, message: message, idCanal: idCanal })
+
+    const options = {
+      method: 'POST',
+      headers: { accept: '*/*', 'Content-Type': 'application/json' },
+      body: objects
+    };
+
+    fetch('https://twilioconversation20220802094045.azurewebsites.net/sendmessage', options)
+      .then(response => response.json())
+      .then(response =>{
+        console.log(response)
+        this.messageConversation = ''}
+      )
+      .catch(err => console.error(err));
   }
 }

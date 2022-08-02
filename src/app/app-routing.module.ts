@@ -12,6 +12,10 @@ const routes: Routes = [
     component: LoginComponent
   },
   {
+    path: 'login/:chanel',
+    component: LoginComponent
+  },
+  {
     path: 'register',
     component: RegisterComponent
   }

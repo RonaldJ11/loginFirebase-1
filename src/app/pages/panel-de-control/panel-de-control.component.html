@@ -1,52 +1,106 @@
-<div class="text-center m-3" >
-    Cuantas personas son para el sorteo?
-</div>
-<div class="text-center m-3" *ngIf=" sorteo && !sorteo[0]; else reiniciarSorteo">
-    <p>Faltan ( {{15-usuarios.length}} ) personas para poder sortear</p>
-    <button class="btnSorteo" (click)="sortear()" [disabled]="!usuarios || usuarios.length<14">ASIGNAR REGALOS</button>
-</div>
-<ng-template #reiniciarSorteo>
-    <div class="text-center m-3">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" type="text/css"
+    rel="stylesheet" />
+<!-- <p>
+    <select name="selectConversation" [(ngModel)]="conversationSelected" (change)="change()">
+        <option [value]="item.sid" *ngFor="let item of conversationsList">{{item.friendlyName}}</option>
+    </select>
+</p>
 
-        <button class="btn btn-danger" (click)="mostrarDialog()">Reiniciar sorteo</button>
-        <div *ngIf="mostrarConfirmacion" class="confirmacionDialog">
-            <div class="card dialog">
-                <label class="h6"> Ingrese el codigo de seguridad</label>
-                <input [(ngModel)]="codigoIngresado" class="form-control" type="password"
-                    placeholder="ingrese el codigo">
-                <div style="display: flex; justify-content: space-around; width: 100%;">
-                    <button class="btn btn-secundary" (click)="mostrarConfirmacion=false">Cancelar</button>
-                    <button class="btn btn-primary" (click)="eliminarSorteo()">OK</button>
+<h1>{{conversationSelected}}</h1> -->
+
+<!-- Toolbar -->
+<div class="content" role="main">
+    <div class="container">
+        <!-- <h3 class=" text-center">Stream Messaging</h3> -->
+        <div class="messaging">
+            <div class="inbox_msg">
+                <div class="inbox_people">
+                    <div class="headind_srch">
+                        <div class="channel_heading">
+                            <h4>Channels</h4>
+                        </div>
+                    </div>
+                    <div class="inbox_chat">
+                        <div class="channels" *ngFor="let channel of conversationsList">
+                            <div class="chat_list" (click)="loadMessages(channel.sid)">
+                                <div class="chat_people">
+                                    <div class="chat_ib">
+                                        <h5>
+                                            {{ channel.friendlyName }}
+                                        </h5>
+                                        <p>{{channel.sid}}</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button>Hola</button>
+                                </div>
+                            </div>
+
+                        </div>
+                        <hr>
+                        <div class="conver bg-muted">
+                            <form class="input_msg_write" (ngSubmit)="addConversation()">
+                                <input type="text" class="" placeholder="Nueva Conversacion" name="newConversation"
+                                    [(ngModel)]="nameConversation" />
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <hr>
+                    </div>
+                </div>
+                <div class="mesgs">
+                    <div class="msg_history">
+
+                        <li class="message" *ngFor="let message of messageList">
+
+                            <div *ngIf="this.userLogin == message.author">
+                                <div class="container darker">
+                                    <div class="right">
+                                        <p>{{message.author}}</p>
+                                        <!-- <i class="fa fa-address-card right" alt="Avatar" aria-hidden="true"></i> -->
+                                    </div>
+                                    <p>{{message.body}}</p>
+                                    <span class="time-right"> {{message.dateCreated | date:'short':'IST'}}</span>
+                                </div>
+                            </div>
+                            <div *ngIf="this.userLogin != message.author">
+                                <div class="container">
+                                    <div class="right">
+                                        <p>{{message.author}}</p>
+                                        <i class="fa fa-address-card right" alt="Avatar" aria-hidden="true"></i>
+                                    </div>
+                                    <p>{{message.body}}</p>
+                                    <span class="time-right"> {{message.dateCreated | date:'short':'IST'}}</span>
+                                </div>
+                            </div>
+                            <!-- <div class="container">
+                                <div class="right">
+                                    <p>{{message.author}}</p>
+                                    <i class="fa fa-address-card right" alt="Avatar" aria-hidden="true"></i>
+                                </div>
+
+                                <p>{{message.body}}</p>
+                                <span class="time-right"> {{message.dateCreated | date:'short':'IST'}}</span>
+                            </div> -->
+
+                        </li>
+                    </div>
+                    <div class="type_msg">
+                        <!-- <form class="input_msg_write" (ngSubmit)="change("")"> -->
+                        <form class="input_msg_write" (ngSubmit)="sendmessage()">
+                            <input type="text" class="write_msg" placeholder="Type a message" name="newMessage"
+                                [(ngModel)]="messageConversation" />
+                            <button class="msg_send_btn" type="submit">
+                                <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</ng-template>
-
-<mat-tab-group>
-    <mat-tab label="Personas">
-        <ol>
-            <li *ngFor="let usuario of usuarios"> ( {{usuario.name}} ) </li>
-        </ol>
-    </mat-tab>
-    <mat-tab label="Quien me toco?" *ngIf="sorteo && sorteo[0]">
-
-        <div *ngFor="let user of sorteo[0].listaSorteada">
-            <h2 class="text-center pt-5" *ngIf="userLogged.email==user?.santa?.email">Tenes que hacerle un regalo a:
-                <br> <b> >>> {{user?.elegido?.name|uppercase}} <<< </b>
-            </h2>
-        </div>
-        <div class="text-center">
-            <img width="50%" style=" max-width: 300px;" src="../../../assets/images/gift.png" alt="">
-        </div>
-
-
-    </mat-tab>
-    <mat-tab label="A quien le toque?">
-        <h1 class="text-center pt-5 mb-0">Queres saber quien es tu santa? </h1><br>
-        <h3 class="text-center"> Envia $100 a la cuenta de Jona!</h3>
-        <div class="text-center">
-            <img width="50%" style=" max-width: 300px;" src="../../../assets/images/gollum.png" alt="">
-        </div>
-    </mat-tab>
-</mat-tab-group>
+</div>

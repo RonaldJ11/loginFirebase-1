@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/02d8814e-2f2c-4a90-b01a-c12166e01b33/microsoft.web/sites/subscriptions/02d8814e-2f2c-4a90-b01a-c12166e01b33/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/AngularChatTW",
+    "appService.deploySubpath": "dist\\loginFirebase"
+}
