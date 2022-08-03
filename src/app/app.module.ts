@@ -23,7 +23,7 @@ import { RegisterComponent } from './components/register/register.component';
     AppRoutingModule,
     NgbModule,
     FormsModule,
-    // AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFireModule.initializeApp(environment.firebaseConfig),
     BrowserAnimationsModule,
   ],
   providers: [],

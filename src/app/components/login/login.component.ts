@@ -15,15 +15,15 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params=>{
-      if(params.has('chanel')){
-        var channel =params.get('chanel');
-        localStorage.setItem("chanel", channel||"")
+    this.route.paramMap.subscribe(params => {
+      if (params.has('chanel')) {
+        var channel = params.get('chanel');
+        localStorage.setItem("chanel", channel || "")
       }
     })
   }
 
-  constructor(private authService: AuthService, private router: Router,private route:ActivatedRoute) { }
+  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute) { }
 
   Ingresar() {
 
@@ -32,18 +32,23 @@ export class LoginComponent implements OnInit {
       localStorage.setItem("name", name);
       // this.setState({ name, loggedIn: true }, this.getToken);
 
+      if (localStorage.getItem('chanel') != '') {
+        const options = {
+          method: 'POST',
+          headers: { accept: '*/*', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idChanel: localStorage.getItem('chanel'), idUser: name })
+        };
 
-      const options = {
-        method: 'POST',
-        headers: {accept: '*/*', 'Content-Type': 'application/json'},
-        body: JSON.stringify({ idChanel: localStorage.getItem('chanel'),idUser: name})
-      };
-      
-      fetch('https://twilioconversation20220802094045.azurewebsites.net/addConversationByUser', options)
-        .then(response => response.json())
-        .then(response => console.log(response))
-        .catch(err => console.error(err));
-        
+        fetch('https://twilioconversation20220802094045.azurewebsites.net/addConversationByUser', options)
+          .then(response => response.json())
+          .then(response =>{
+            console.log(response);
+            localStorage.removeItem("chanel")
+          } )
+          .catch(err => console.error(err));
+
+      }
+
       var objects = JSON.stringify({ NameUser: name.trim() })
       fetch(
         "https://twilioconversation20220802094045.azurewebsites.net/addToken", {
