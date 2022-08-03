@@ -141,7 +141,7 @@ export class PanelDeControlComponent implements OnInit {
       .then(response =>
         Swal.fire({
           title: 'Finalizado Copia el link y pasalo a la otra conversacion',
-          text: 'https://twilioconversation20220802094045.azurewebsites.net/login/' + response,
+          text: 'http://localhost:4200/login/' + response,
           showDenyButton: false,
           showCancelButton: false,
           confirmButtonText: 'OK',
