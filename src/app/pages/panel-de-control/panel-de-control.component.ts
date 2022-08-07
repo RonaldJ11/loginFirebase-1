@@ -141,7 +141,7 @@ export class PanelDeControlComponent implements OnInit {
       .then(response =>
         Swal.fire({
           title: 'Finalizado Copia el link y pasalo a la otra conversacion',
-          text: 'http://localhost:4200/login/' + response,
+          text: 'https://lemon-beach-016389a10.1.azurestaticapps.net/login/' + response,
           showDenyButton: false,
           showCancelButton: false,
           confirmButtonText: 'OK',
